@@ -13,7 +13,7 @@ and safety boundaries.
 - Package manager: npm (`package-lock.json` is the source of truth; don't switch package
   managers).
 
-## Commands
+## Commands (not exhaustive list)
 
 - Install: `npm ci` (preferred for reproducible installs) or `npm install`
 - Build: `npm run build` (`tsc && vite build`)
