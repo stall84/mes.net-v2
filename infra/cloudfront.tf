@@ -1,19 +1,20 @@
 # CloudFront distribution for content delivery
 
-# Origin Access Identity to restrict S3 bucket access
-resource "aws_cloudfront_origin_access_identity" "website" {
-  comment = "Origin Access Identity for ${var.project_name}"
+# Origin Access Control (OAC) to restrict S3 bucket access
+resource "aws_cloudfront_origin_access_control" "website" {
+  name                              = "${var.project_name}-oac"
+  description                       = "OAC for ${var.project_name} S3 origin"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
 
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "website" {
   origin {
-    domain_name = aws_s3_bucket_website_configuration.website.bucket_domain_name
-    origin_id   = var.project_name
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.website.cloudfront_canonical_user_id
-    }
+    domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
+    origin_id                = var.project_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.website.id
   }
 
   enabled             = true
@@ -35,9 +36,9 @@ resource "aws_cloudfront_distribution" "website" {
       }
     }
 
-    min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
+    min_ttl     = 0
+    default_ttl = 3600
+    max_ttl     = 86400
 
     compress = true
   }
@@ -70,6 +71,5 @@ resource "aws_cloudfront_distribution" "website" {
     Name = "${var.project_name}-cloudfront"
   }
 
-  # Wait for the distribution to be deployed before proceeding
   wait_for_deployment = true
 }

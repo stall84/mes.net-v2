@@ -1,24 +1,9 @@
 # S3 bucket for static website hosting
-
 resource "aws_s3_bucket" "website" {
   bucket = var.project_name
-  acl    = "private"
 
   tags = {
     Name = "${var.project_name}-bucket"
-  }
-}
-
-# Enable static website hosting
-resource "aws_s3_bucket_website_configuration" "website" {
-  bucket = aws_s3_bucket.website.id
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "error.html"
   }
 }
 
@@ -58,17 +43,21 @@ resource "aws_s3_bucket_policy" "website" {
 
 data "aws_iam_policy_document" "s3_bucket_policy" {
   statement {
-    sid       = "AllowCloudFrontServicePrincipalReadOnly"
-    effect    = "Allow"
+    sid    = "AllowCloudFrontServicePrincipalReadOnly"
+    effect = "Allow"
+
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
     }
-    resources  = [
-      "${aws_s3_bucket.website.arn}/*"
-      ]
-    actions    = [
-      "s3:GetObject"
-      ]
+
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.website.arn}/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.website.arn]
+    }
   }
 }

@@ -1,0 +1,20 @@
+.about {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.about-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.about-section,
+.skills-section {
+  margin-bottom: 2rem;
+}
+
+.skills-section ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
