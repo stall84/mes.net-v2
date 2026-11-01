@@ -41,7 +41,7 @@ When asked to check for or apply dependency upgrades in this project:
 2. **Minimum release age (supply-chain cooldown):** before upgrading to a specific new
    version, check when it was published with `npm view <package> time --json` (or
    `npm view <package>@<version> time.<version>`). **Do not upgrade to a version
-   published less than 14 days ago**, even if `npm outdated`/`npm audit` suggests it —
+   published less than 7 days ago**, even if `npm outdated`/`npm audit` suggests it —
    wait for it to clear the cooldown, unless it's the only version that fixes an actively
    exploited, currently-disclosed vulnerability (call this out explicitly if you override
    the cooldown).
@@ -54,19 +54,28 @@ When asked to check for or apply dependency upgrades in this project:
      major upgrade. Otherwise just report the finding.
    - *Security advisories from `npm audit`:* prioritize regardless of semver size, but
      still check the release-age cooldown and for breaking changes first.
-4. **Apply and refresh the lockfile.** After editing `package.json`, run `npm install` (or
-   `npm ci` if only the lockfile needs to be regenerated) so `package-lock.json` stays in
+4. **Apply and refresh the lockfile.** After editing `package.json`, run `npm install` to update `package-lock.json`.
    sync.
 5. **Verify.** Run `npm run build` and `npm test`. If either fails because of a specific
    upgrade, revert or fix just that package and say so in your summary — don't leave the
    project in a broken state.
 6. **Document when it matters.** Write a new ADR only for a major/breaking upgrade or a
-   dependency swap/removal. Routine patch/minor bumps don't need one.
+   dependency, swap/removal, or shim requirement. 
 7. **Report clearly.** List every package you upgraded (old → new version), every package
    you flagged but didn't touch (and why), and the commands you ran to verify, so the
    result can be reviewed and committed by a human.
 
-## Out of scope for dependency-only tasks
+### Dependency upgrade failure or error policy
+
+- If an upgrade fails, stop further upgrade attempts and report the command, error, and affected package.
+- Report Node/npm versions and relevant requirements when those details are available (`npm audit`, `npm view <package-name> engines`, `node --version` etc can be used for this).
+- Summarize likely cause and a safe next step. Do not make speculative environment changes.
+- If the attempt left partial changes, restore only changes introduced by that attempt; preserve pre-existing work.
+- Document the failure in an ADR only when the upgrade warrants one under Step 6.
+- For *all* types of failures or errors, including those you'd write an ADR for, create a simple textual log file in this project's root directory called `upgrade-errors.log` and a description of the failure, and suggested solutions. 
+
+### Out of scope for dependency-only tasks
 
 - `infra/*.tf` (Terraform) and AWS/Cloudflare configuration
 - Content/copy changes under `src/pages/` and `public/`
+
