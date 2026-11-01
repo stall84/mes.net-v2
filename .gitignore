@@ -1,3 +1,38 @@
 *.env
+.env
 node_modules
 dist
+.DS_Store
+
+# Local working directory (contains provider plugins and modules)
+.terraform/
+
+# Local cache directories
+.terraform.lock.hcl
+
+# Infrastructure state files (Can contain cleartext secrets!)
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+
+# Sensitive variable files (Often contain passwords, tokens, API keys)
+*.tfvars
+*.tfvars.json
+
+# Local overrides or development modifications
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Log files
+crash.log
+crash.*.log
+
+# Generated execution plans (if you output plans via 'terraform plan -out=...')
+*.tfplan
+*planout
