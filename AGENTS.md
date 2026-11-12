@@ -19,8 +19,10 @@ and safety boundaries.
 - Build: `npm run build` (`tsc && vite build`)
 - Test: `npm test` (vitest)
 - Lint: `npm run lint`
+- Node(version): `node --version`
 - Do **not** run `npm run dev` / `npm run preview` in an automated/unattended session —
   they start long-running servers that never exit.
+- In the specific event that you need a 'clean' install (polluted lockfile, etc), and **only** in that event, use the `clean_install` tool. It backs up `package-lock.json`, deletes it and `node_modules`, runs `npm install`, and restores the lockfile if the install fails. Do not try to delete `node_modules` or the lockfile any other way.
 
 ## Conventions
 
@@ -37,13 +39,13 @@ When asked to check for or apply dependency upgrades in this project:
 
 1. **Survey first.** Run `npm outdated` and `npm audit` to see what's out of date and
    whether anything has a known vulnerability. Read `package.json` /
-   `package-lock.json` before changing anything.
-2. **Minimum release age (supply-chain cooldown):** before upgrading to a specific new
-   version, check when it was published with `npm view <package> time --json` (or
-   `npm view <package>@<version> time.<version>`). **Do not upgrade to a version
-   published less than 7 days ago**, even if `npm outdated`/`npm audit` suggests it —
-   wait for it to clear the cooldown, unless it's the only version that fixes an actively
-   exploited, currently-disclosed vulnerability (call this out explicitly if you override
+   `package-lock.json` before changing anything. Also check the current Node version with `node --version`, since it directly affects what can be upgraded and how to plan forward.
+2. **Minimum release age (MRA) (supply-chain "cooldown"):** before upgrading to a specific new
+   version, check _when_ it was published with `npm view <package> time --json` (or
+   `npm view <package>@<version> time.<version>`). Do not upgrade to a version
+   published less than **7 days ago**, even if `npm outdated`/`npm audit` suggests it —
+   wait for it to clear the cooldown period, _unless it's the only version_ that fixes an actively
+   exploited, currently-disclosed vulnerability (document this if you override
    the cooldown).
 3. **Classify each update:**
    - *Patch/minor, semver-compatible with the existing `^range` in `package.json`, no
@@ -55,12 +57,14 @@ When asked to check for or apply dependency upgrades in this project:
    - *Security advisories from `npm audit`:* prioritize regardless of semver size, but
      still check the release-age cooldown and for breaking changes first.
 4. **Apply and refresh the lockfile.** After editing `package.json`, run `npm install` to update `package-lock.json`.
-   sync.
+   - If a 'clean' install is needed, use the `clean_install` tool (see Commands). It makes the
+     `package-lock.json` backup itself, so don't copy or delete the lockfile manually. Don't use
+     `npm ci` after a lockfile has been removed: it requires an existing lockfile.
 5. **Verify.** Run `npm run build` and `npm test`. If either fails because of a specific
    upgrade, revert or fix just that package and say so in your summary — don't leave the
    project in a broken state.
 6. **Document when it matters.** Write a new ADR only for a major/breaking upgrade or a
-   dependency, swap/removal, or shim requirement. 
+   dependency swap/removal, or shim requirement.
 7. **Report clearly.** List every package you upgraded (old → new version), every package
    you flagged but didn't touch (and why), and the commands you ran to verify, so the
    result can be reviewed and committed by a human.
